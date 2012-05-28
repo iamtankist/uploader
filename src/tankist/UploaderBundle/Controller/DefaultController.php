@@ -29,6 +29,8 @@ class DefaultController extends Controller
         $excludeFiles = array('.','..');
     	$dir = "/Volumes/Family/Video/";
     	$dir = "../../../Movies/Videos/";
+
+        $dir = $this->container->getParameter('video_directory');
 		$dh  = opendir($dir);
 
         $vimeoRepository = $this->getDoctrine()->getRepository('tankistUploaderBundle:Vimeo');
