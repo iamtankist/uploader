@@ -42,7 +42,7 @@ $(document).ready(function(){
         $('.info').bind('unbind').bind('click',function(){
             var filename = $(this).closest('.record').find('.filename').html();
                 $.ajax({
-                    url: '/app_dev.php/info/',
+                    url: jsPath.info,
                     data: {filename:filename},
                     dataType: 'json',
                     success: function(data) {
@@ -64,7 +64,7 @@ $(document).ready(function(){
 
     function requestFileList(){
         $.ajax({
-            url: '/app_dev.php/list/',
+            url: jsPath.list,
             dataType: 'json',
             success: function(data) {
                 var files = data.files;
