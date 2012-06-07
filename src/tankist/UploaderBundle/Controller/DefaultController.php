@@ -115,7 +115,7 @@ class DefaultController extends Controller
             } else {
 
 
-                $searchQuery = pathingfo($filename,PATHINFO_FILENAME);
+                $searchQuery = pathinfo($filename,PATHINFO_FILENAME);
 
                 try {
                     // 2010-11-29 182354
