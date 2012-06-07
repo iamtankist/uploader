@@ -114,6 +114,9 @@ class DefaultController extends Controller
                 return new Response(json_encode(array('status'=>'success','id'=>$video->getVimeoId())));
             } else {
 
+
+                $searchQuery = pathingfo($filename,PATHINFO_FILENAME);
+
                 try {
                     // 2010-11-29 182354
                     $response = $vimeo->call('vimeo.videos.search', array(
@@ -122,7 +125,7 @@ class DefaultController extends Controller
                         'per_page'         => 1,
                         'summary_response' => 0,
                         'full_response'    => 0,
-                        'query'            => $filename,
+                        'query'            => $searchQuery,
                         'sort'             => 'relevant'
                     ));
 
