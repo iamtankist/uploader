@@ -24,7 +24,7 @@ class DefaultController extends Controller
      */
     public function listAction()
     {
-        $excludeFiles = array('.','..');
+        $excludeFiles = array('.','..','.DS_Store','@eaDir');
 
         $dir = $this->container->getParameter('video_directory');
 		$dh  = opendir($dir);
