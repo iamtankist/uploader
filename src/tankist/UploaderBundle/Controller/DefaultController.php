@@ -42,15 +42,13 @@ class DefaultController extends Controller
             }
 		}
 
-        function sortByName($a, $b) {
-          if ($a['name'] == $b['name']) {
-            return 0;
-          } else {
-            return $a['name'] < $b['name'] ? 1 : -1; // reverse order
-          }
-        }
-
-        usort($files, 'sortByName');
+        usort($files, function($a,$b){
+            if ($a['name'] == $b['name']) {
+                return 0;
+            } else {
+                return $a['name'] < $b['name'] ? 1 : -1; // reverse order
+            }
+        });
 
 		return new Response(json_encode(array('files' => $files)));
     }
