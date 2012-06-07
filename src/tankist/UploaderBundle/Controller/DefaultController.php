@@ -50,7 +50,7 @@ class DefaultController extends Controller
           }
         }
 
-        usort($file, 'sortByName');
+        usort($files, 'sortByName');
 
 		return new Response(json_encode(array('files' => $files)));
     }
