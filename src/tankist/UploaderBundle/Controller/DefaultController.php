@@ -24,11 +24,7 @@ class DefaultController extends Controller
      */
     public function listAction()
     {
-
-
         $excludeFiles = array('.','..');
-    	$dir = "/Volumes/Family/Video/";
-    	$dir = "../../../Movies/Videos/";
 
         $dir = $this->container->getParameter('video_directory');
 		$dh  = opendir($dir);
@@ -45,6 +41,16 @@ class DefaultController extends Controller
                 );
             }
 		}
+
+        function sortByName($a, $b) {
+          if ($a['name'] == $b['name']) {
+            return 0;
+          } else {
+            return $a['name'] < $b['name'] ? 1 : -1; // reverse order
+          }
+        }
+
+        usort($file, 'sortByName');
 
 		return new Response(json_encode(array('files' => $files)));
     }
