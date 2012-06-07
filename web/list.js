@@ -10,12 +10,17 @@ $(document).ready(function(){
             var $vimeoCell = $('<td></td>').addClass('vimeo').html('');
             var $actionCell = $('<td></td>').addClass('actions');
 
-            if(file.vimeo) {
-                var $playAction = $('<a href="javascript:void(0);"></a>').addClass('icon-play-circle').addClass('play');
+            var $playAction = $('<a href="javascript:void(0);"></a>').addClass('icon-play-circle').addClass('play');
                 $vimeoCell.append($playAction);
-            } else {
-                var $uploadAction = $('<a href="javascript:void(0);"></a>').addClass('icon-upload').addClass('upload');
+            var $uploadAction = $('<a href="javascript:void(0);"></a>').addClass('icon-upload').addClass('upload');
                 $vimeoCell.append($uploadAction);
+
+            if(file.vimeo) {
+                $playAction.css({display:'block'});
+                $uploadAction.css({display:'none'});
+            } else {
+                $playAction.css({display:'none'});
+                $uploadAction.css({display:'block'});
             }
 
             var $infoAction = $('<a href="javascript:void(0);"></a>').addClass('icon-info-sign').addClass('info');
@@ -35,27 +40,39 @@ $(document).ready(function(){
     }
 
     function activateListButtons(){
-        $('.upload').bind('unbind').bind('click',function(){
+        $('.upload').unbind().bind('click',function(){
             alert('upload'+$(this).closest('.record').find('.filename').html());
         });
 
-        $('.info').bind('unbind').bind('click',function(){
-            var filename = $(this).closest('.record').find('.filename').html();
+        $('.info').unbind().bind('click',function(){
+            var $record = $(this).closest('.record');
+            var filename = $record.find('.filename').html();
                 $.ajax({
                     url: jsPath.info,
                     data: {filename:filename},
                     dataType: 'json',
                     success: function(data) {
+                        console.log(data);
+                        
+                        var color;
+                        if(data.status == 'error') {
+                            color = 'red';
+                        } else {
+                            color = 'green';
+                            $record.find('.upload').hide();
+                            $record.find('.play').show();
+                        }
+                        $record.find('td').effect("highlight", {color:color}, 1000);
                         /*var files = data.files;
                         renderFileListTable(files);*/
                     }
                 });
 
 
-            alert('info'+filename);
+            
         });
 
-        $('.play').bind('unbind').bind('click',function(){
+        $('.play').unbind().bind('click',function(){
             alert('play'+$(this).closest('.record').find('.filename').html());
         });
     }
