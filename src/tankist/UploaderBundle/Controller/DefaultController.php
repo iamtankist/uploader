@@ -106,7 +106,7 @@ class DefaultController extends Controller
     {
         $filename = $this->getRequest()->query->get('filename');
         //$vimeo = new phpVimeo('CONSUMER_KEY', 'CONSUMER_SECRET', 'ACCESS_TOKEN', 'ACCESS_TOKEN_SECRET');
-        $vimeo = new \Vimeo_Vimeo('f583c70f09eb0fc03172d51384fc0d85', 'e475e4242f51ffa', '6078495ac877f9e395c98d855bcba7bd', 'b4e1334cae81378e03cf9117ccb6159f2cd25dbe');
+        $vimeo = new \Vimeo_Vimeo('f583c70f09eb0fc03172d51384fc0d85', 'e475e4242f51ffa', '6078495ac877f9e395c98d855bcba7bd', 'b4e1334cae81378e03cf9117ccb6159f2cd25dbe',null);
 
         $video = $this->getDoctrine()
                             ->getRepository('tankistUploaderBundle:Vimeo')

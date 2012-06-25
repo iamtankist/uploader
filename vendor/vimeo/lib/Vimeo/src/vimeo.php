@@ -496,7 +496,6 @@ class phpVimeo
         $verify = $this->call('vimeo.videos.upload.verifyChunks', array('ticket_id' => $ticket));
         $this->logger->addDebug('VERIFICATION: '.var_export($verify,true));
 
-        var_dump($verify->ticket->chunks);
 
         if(isset($verify->ticket->chunks->chunk['id'])) {
             $chunk_id = $verify->ticket->chunks->chunk['id'];
