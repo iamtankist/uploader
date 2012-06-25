@@ -10,12 +10,12 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 class DefaultController extends Controller
 {
     /**
-     * @Route("/hello/{name}", name="_hello")
+     * @Route("/", name="_landing")
      * @Template()
      */
-    public function indexAction($name)
+    public function indexAction()
     {
-        return array('name' => $name);
+        return array();
     }
 
     /**
@@ -68,88 +68,90 @@ class DefaultController extends Controller
     }
 
     /**
-     * @Route("/upload/")
+     * @Route("/upload", name="_upload")
      * @Template()
      */
     public function uploadAction()
     {
-        //$vimeo = new phpVimeo('CONSUMER_KEY', 'CONSUMER_SECRET', 'ACCESS_TOKEN', 'ACCESS_TOKEN_SECRET');
-        $vimeo = new \Vimeo_Vimeo('f583c70f09eb0fc03172d51384fc0d85', 'e475e4242f51ffa', '6078495ac877f9e395c98d855bcba7bd', 'b4e1334cae81378e03cf9117ccb6159f2cd25dbe');
+        $filename = $this->getRequest()->query->get('filename');
+        $rootDir = $this->get('kernel')->getRootDir();
+        $cacheDir = $this->get('kernel')->getCacheDir();
+        $logDir = $this->get('kernel')->getLogDir();
 
-        try {
-            $video_id = $vimeo->upload("/Users/tankist/Movies/Videos/2012-05-22 160802.mp4",true,'/tmp');
+        $videoDir = $this->container->getParameter('video_directory');
+        
+        $filePath = $videoDir."/".$filename;
+        
+        $consoleBin = $rootDir."/console";
+        $cmd = "$consoleBin vimeo:upload \"$filePath\"";
 
-            if ($video_id) {
-                echo '<a href="http://vimeo.com/' . $video_id . '">Upload successful!</a>';
+        $outputfile = $logDir."/output_$filename.out";
+        $pidfile = $cacheDir."/pid_$filename.pid";
 
-                $vimeo->call('vimeo.videos.setPrivacy', array('privacy' => 'nobody', 'video_id' => $video_id));
-                $vimeo->call('vimeo.videos.setTitle', array('title' => 'YOUR TITLE', 'video_id' => $video_id));
-                $vimeo->call('vimeo.videos.setDescription', array('description' => 'YOUR_DESCRIPTION', 'video_id' => $video_id));
-            }
-            else {
-                echo "Video file did not exist!";
-            }
-        }
-        catch (VimeoAPIException $e) {
-            echo "Encountered an API error -- code {$e->getCode()} - {$e->getMessage()}";
-        }
-        return new Response("");
+
+        $fullCmd = sprintf('%s < /dev/null > "%s" 2>&1 & echo $! >> "%s"', $cmd, $outputfile, $pidfile);
+
+        echo "out => $outputfile<br>";
+        echo "pid => $pidfile<br>";
+        echo "cmd => $fullCmd<br>";
+        exec($fullCmd);
+        exit;
     }
 
     /**
-         * @Route("/info/", name="_info")
-         * @Template()
-         */
-        public function infoAction()
-        {
-            $filename = $this->getRequest()->query->get('filename');
-            //$vimeo = new phpVimeo('CONSUMER_KEY', 'CONSUMER_SECRET', 'ACCESS_TOKEN', 'ACCESS_TOKEN_SECRET');
-            $vimeo = new \Vimeo_Vimeo('f583c70f09eb0fc03172d51384fc0d85', 'e475e4242f51ffa', '6078495ac877f9e395c98d855bcba7bd', 'b4e1334cae81378e03cf9117ccb6159f2cd25dbe');
+     * @Route("/info/", name="_info")
+     * @Template()
+     */
+    public function infoAction()
+    {
+        $filename = $this->getRequest()->query->get('filename');
+        //$vimeo = new phpVimeo('CONSUMER_KEY', 'CONSUMER_SECRET', 'ACCESS_TOKEN', 'ACCESS_TOKEN_SECRET');
+        $vimeo = new \Vimeo_Vimeo('f583c70f09eb0fc03172d51384fc0d85', 'e475e4242f51ffa', '6078495ac877f9e395c98d855bcba7bd', 'b4e1334cae81378e03cf9117ccb6159f2cd25dbe');
 
-            $video = $this->getDoctrine()
-                                ->getRepository('tankistUploaderBundle:Vimeo')
-                                ->findOneByFilename($filename);
+        $video = $this->getDoctrine()
+                            ->getRepository('tankistUploaderBundle:Vimeo')
+                            ->findOneByFilename($filename);
 
-            if($video){
-                return new Response(json_encode(array('status'=>'success','id'=>$video->getVimeoId())));
-            } else {
+        if($video){
+            return new Response(json_encode(array('status'=>'success','id'=>$video->getVimeoId())));
+        } else {
 
 
-                $searchQuery = pathinfo($filename,PATHINFO_FILENAME);
+            $searchQuery = pathinfo($filename,PATHINFO_FILENAME);
 
-                try {
-                    // 2010-11-29 182354
-                    $response = $vimeo->call('vimeo.videos.search', array(
-                        'user_id'          => 'mkrtchyan',
-                        'page'             => 1,
-                        'per_page'         => 1,
-                        'summary_response' => 0,
-                        'full_response'    => 0,
-                        'query'            => $searchQuery,
-                        'sort'             => 'relevant'
-                    ));
+            try {
+                // 2010-11-29 182354
+                $response = $vimeo->call('vimeo.videos.search', array(
+                    'user_id'          => 'mkrtchyan',
+                    'page'             => 1,
+                    'per_page'         => 1,
+                    'summary_response' => 0,
+                    'full_response'    => 0,
+                    'query'            => $searchQuery,
+                    'sort'             => 'relevant'
+                ));
 
-                    if(!empty($response->videos->video)){
-                        $vimeoId = $response->videos->video[0]->id;
+                if(!empty($response->videos->video)){
+                    $vimeoId = $response->videos->video[0]->id;
 
-                        $video = new Vimeo();
-                        $video->setFilename($filename);
-                        $video->setVimeoId($vimeoId);
-                        $em = $this->getDoctrine()->getEntityManager();
-                        $em->persist($video);
-                        $em->flush();
-                        return new Response(json_encode(array('status'=>'success','id'=>$video->getVimeoId())));
-                    } else {
-                        return new Response(json_encode(array('status'=>'error','message'=>'video not found on vimeo')));
-                    }
-                }
-                catch (VimeoAPIException $e) {
-
-                    return new Response(json_encode(array('status'=>'error','message'=>"Encountered an API error -- code {$e->getCode()} - {$e->getMessage()}")));
-
+                    $video = new Vimeo();
+                    $video->setFilename($filename);
+                    $video->setVimeoId($vimeoId);
+                    $em = $this->getDoctrine()->getEntityManager();
+                    $em->persist($video);
+                    $em->flush();
+                    return new Response(json_encode(array('status'=>'success','id'=>$video->getVimeoId())));
+                } else {
+                    return new Response(json_encode(array('status'=>'error','message'=>'video not found on vimeo')));
                 }
             }
+            catch (VimeoAPIException $e) {
 
-            return new Response("");
+                return new Response(json_encode(array('status'=>'error','message'=>"Encountered an API error -- code {$e->getCode()} - {$e->getMessage()}")));
+
+            }
         }
+
+        return new Response("");
+    }
 }

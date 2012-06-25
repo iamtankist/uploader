@@ -41,7 +41,28 @@ $(document).ready(function(){
 
     function activateListButtons(){
         $('.upload').unbind().bind('click',function(){
-            alert('upload'+$(this).closest('.record').find('.filename').html());
+            var $record = $(this).closest('.record');
+            var filename = $record.find('.filename').html();
+                $.ajax({
+                    url: jsPath.upload,
+                    data: {filename:filename},
+                    dataType: 'json',
+                    success: function(data) {
+                        console.log(data);
+                        
+                        var color;
+                        if(data.status == 'error') {
+                            color = 'red';
+                        } else {
+                            color = 'green';
+                            //$record.find('.upload').hide();
+                            //$record.find('.play').show();
+                        }
+                        $record.find('td').effect("highlight", {color:color}, 1000);
+                        /*var files = data.files;
+                        renderFileListTable(files);*/
+                    }
+                });
         });
 
         $('.info').unbind().bind('click',function(){
