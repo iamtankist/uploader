@@ -19,7 +19,7 @@ class phpVimeo
     private $_token_secret = false;
     private $_upload_md5s = array();
 
-    public function __construct($consumer_key, $consumer_secret, $token = null, $token_secret = null,$logger)
+    public function __construct($consumer_key, $consumer_secret, $token = null, $token_secret = null)
     {
         $this->_consumer_key = $consumer_key;
         $this->_consumer_secret = $consumer_secret;
@@ -27,8 +27,6 @@ class phpVimeo
         if ($token && $token_secret) {
             $this->setToken($token, $token_secret);
         }
-
-        $this->logger = $logger;
     }
 
     /**
@@ -524,26 +522,14 @@ class phpVimeo
 
         // Confirmation successful, return video id
         if ($complete->stat == 'ok') {
-             $this->logger->addINFO('COMPLETE');
             return $complete->ticket->video_id;
         }
         else if ($complete->err) {
-            $this->logger->addError($complete->err->msg);
             throw new VimeoAPIException($complete->err->msg, $complete->err->code);
         }
     }
 
-    protected function verifyChunk($chunks, $chunk_id, $chunk_size){
-        $chunk = $chunks[$chunk_id];
-        $this->logger->addInfo('VERIFICATION: should '. $chunk['size']. ' is '.$chunk_size);
-
-        if ($chunk['size'] != $chunk_size) {
-            // size incorrect, uh oh
-            $errMsg = "Chunk {$chunk_id} is actually {$chunk['size']} but uploaded as {$chunk_size}";
-            $this->logger->addError($errMsg);
-            echo $errMsg;
-        }   
-    }
+    
 
     /**
      * Upload a video in multiple pieces.

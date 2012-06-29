@@ -105,8 +105,15 @@ class DefaultController extends Controller
     public function infoAction()
     {
         $filename = $this->getRequest()->query->get('filename');
-        //$vimeo = new phpVimeo('CONSUMER_KEY', 'CONSUMER_SECRET', 'ACCESS_TOKEN', 'ACCESS_TOKEN_SECRET');
-        $vimeo = new \Vimeo_Vimeo('f583c70f09eb0fc03172d51384fc0d85', 'e475e4242f51ffa', '6078495ac877f9e395c98d855bcba7bd', 'b4e1334cae81378e03cf9117ccb6159f2cd25dbe',null);
+
+        
+        $cosumerKey = $this->container->getParameter('vimeo_consumer_key');
+        $cosumerSecret = $this->container->getParameter('vimeo_consumer_secret');
+        $accessToken = $this->container->getParameter('vimeo_access_token');
+        $accessTokenSecret = $this->container->getParameter('vimeo_access_token_secret');
+        
+
+        $vimeo = new \Vimeo_Vimeo($cosumerKey, $cosumerSecret, $accessToken, $accessTokenSecret,null);
 
         $video = $this->getDoctrine()
                             ->getRepository('tankistUploaderBundle:Vimeo')
@@ -133,7 +140,7 @@ class DefaultController extends Controller
 
                 if(!empty($response->videos->video)){
                     $vimeoId = $response->videos->video[0]->id;
-
+                    
                     $video = new Vimeo();
                     $video->setFilename($filename);
                     $video->setVimeoId($vimeoId);
