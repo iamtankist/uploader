@@ -48,11 +48,6 @@ class Vimeo_Vimeo extends phpVimeo {
             return false;
         }
 
-
-
-
-       
-
         // Figure out the filename and full size
         $path_parts = pathinfo($file_path);
         $file_name = $path_parts['basename'];
@@ -107,8 +102,7 @@ class Vimeo_Vimeo extends phpVimeo {
                     'size' => filesize($chunk_file_name)
                 );
             }
-        }
-        else {
+        } else {
             $chunks[] = array(
                 'file' => realpath($file_path),
                 'size' => filesize($file_path)
@@ -159,9 +153,7 @@ class Vimeo_Vimeo extends phpVimeo {
             foreach ($verify->ticket->chunks->chunk as $chunk_check) {
                 $this->verifyChunk($chunks, $chunk_check->id, $chunk_check->size);
             }
-       } 
-
-
+        }
 
         // Complete the upload
         $complete = $this->call('vimeo.videos.upload.complete', array(

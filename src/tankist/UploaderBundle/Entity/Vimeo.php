@@ -22,6 +22,13 @@ class Vimeo
     private $id;
 
     /**
+     * @var string $status
+     *
+     * @ORM\Column(name="status", type="string", length=255)
+     */
+    private $status;
+
+    /**
      * @var string $filename
      *
      * @ORM\Column(name="filename", type="string", length=255)
@@ -44,6 +51,26 @@ class Vimeo
     public function getId()
     {
         return $this->id;
+    }
+
+    /**
+     * Set status
+     *
+     * @param string $status
+     */
+    public function setStatus($status)
+    {
+        $this->status = $status;
+    }
+
+    /**
+     * Get status
+     *
+     * @return string 
+     */
+    public function getStatus()
+    {
+        return $this->status;
     }
 
     /**
