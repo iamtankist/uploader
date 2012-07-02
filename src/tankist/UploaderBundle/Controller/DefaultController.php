@@ -30,17 +30,15 @@ class DefaultController extends Controller
 		$dh  = opendir($dir);
 
         $vimeoRepository = $this->getDoctrine()->getRepository('tankistUploaderBundle:Vimeo');
+        $vimeoVideos = $vimeoRepository->findAll();
 
         $files = array();
 		while (false !== ($filename = readdir($dh))) {
             if(!in_array($filename,$excludeFiles)){
-                $vimeoVideo = $vimeoRepository->findOneByFilename($filename);
+                //$vimeoVideo = $vimeoVideos->findOneBy(array('filename' => $filename));
 		        $files[] = array(
                     'name' => $filename,
-                    'vimeo' => array(
-                        'id'        => $vimeoVideo ? $vimeoVideo->getVimeoId() : 0,
-                        'status'    => $vimeoVideo ? $vimeoVideo->getStatus()  : 'not uploaded',
-                    )
+                    'vimeo' => $this->findVideoByFilename($vimeoVideos,$filename)
                 );
             }
 		}
@@ -54,6 +52,18 @@ class DefaultController extends Controller
         });
 
 		return new Response(json_encode(array('files' => $files)));
+    }
+
+    protected function findVideoByFilename($resultSet, $filename){
+        foreach($resultSet as $videoEntity){
+            if($videoEntity->getFilename() == $filename){
+                return array(
+                    'id'        => $videoEntity ? $videoEntity->getVimeoId() : 0,
+                    'status'    => $videoEntity ? $videoEntity->getStatus()  : 'not uploaded',
+                );
+            }
+        }
+        return array();
     }
 
 }
