@@ -109,6 +109,7 @@ $(document).ready(function(){
             success: function(data) {
                 var files = data.files;
                 renderFileListTable(files);
+                $('.loader').remove();
             }
         });
     }

@@ -11,3 +11,9 @@
     width: 20px;
     text-align: right;
 }
+
+.loader{
+	width: 300px;
+	height: 200px;
+	background: url('/ajax-loader.gif') no-repeat center center;
+}
