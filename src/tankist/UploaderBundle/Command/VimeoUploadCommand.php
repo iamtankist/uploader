@@ -18,10 +18,9 @@ class VimeoUploadCommand extends ContainerAwareCommand
     protected function configure()
     {
         $this
-            ->setName('vimeo:upload')
+            ->setName('upload:vimeo')
             ->setDescription('Uploads file to vimeo')
-            ->addArgument('path', InputArgument::OPTIONAL, 'Which file do you want to upload?')
-            ->addOption('yell', null, InputOption::VALUE_NONE, 'If set, the task will yell in uppercase letters')
+            ->addArgument('path', InputArgument::REQUIRED, 'Which file do you want to upload?')
         ;
     }
 

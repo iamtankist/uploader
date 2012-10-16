@@ -55,6 +55,49 @@ class VimeoController extends Controller
     }
 
     /**
+     * @Route("/vimeo/progress/", name="_progress")
+     * @Template()
+     */
+    public function progressAction()
+    {
+        $filename = $this->getRequest()->query->get('filename');
+
+        $logDir = $this->get('kernel')->getLogDir();
+        $logFile = $logDir."/log_".$filename.".log";
+
+        if(!file_exists($logFile)){
+            return new Response(json_encode(array('status'=>'error','message'=>"Log file does not exist")));
+        }
+
+        $lines = file($logFile);
+
+        $lastMilestone = 0;
+        $totalMilestones = 0;
+        foreach ($lines as $line_num => $line) {
+            if(preg_match('/COMPLETE/',$line)){
+                return new Response(json_encode(array('status'=>'complete','message'=>"Upload was complete successfullty")));
+            }
+
+            if(preg_match('/VERIFICATION/',$line)){
+                return new Response(json_encode(array('status'=>'verification','message'=>"File upload is being verified")));
+            }
+
+            if(preg_match('/PROGRESS: (\d+) of (\d+)/',$line, $matches)){
+                $lastMilestone = (int)$matches[1];
+                $totalMilestones = (int)$matches[2];
+            }
+        }
+
+        if($totalMilestones) {
+            $percent = round($lastMilestone/$totalMilestones*100);
+        } else {
+            return new Response(json_encode(array('status'=>'error','message'=>"File is not being uploaded")));
+        }
+
+        return new Response(json_encode(array('status'=>'progress','message'=>"File is being uploaded",'percent' => $percent)));
+    }
+
+    /**
      * @Route("/vimeo/info/", name="_info")
      * @Template()
      */
