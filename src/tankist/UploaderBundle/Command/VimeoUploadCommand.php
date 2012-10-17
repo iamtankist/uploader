@@ -15,18 +15,58 @@ use tankist\UploaderBundle\Entity\Vimeo;
 
 class VimeoUploadCommand extends ContainerAwareCommand
 {
+
+    protected $lockfle = '';
+
     protected function configure()
     {
         $this
             ->setName('upload:vimeo')
-            ->setDescription('Uploads file to vimeo')
-            ->addArgument('path', InputArgument::REQUIRED, 'Which file do you want to upload?')
+            ->setDescription('Uploads file to vimeo');
         ;
+    }
+
+    protected function lock(){
+        fopen($this->lockfile, "w");
+    }
+
+    protected function isLocked(){
+        return file_exists($this->lockfile);
+    }
+
+    protected function unlock(){
+        unlink($this->lockfile);    
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $path = $input->getArgument('path');
+        $this->lockfile = $this->getApplication()->getKernel()->getCacheDir()."/".str_replace('upload:','',$this->getName()).".lock";
+
+        if($this->isLocked()) {
+            throw new \Exception('Command is still being executed');
+        }
+        $this->lock();
+
+        $dir      = $this->getContainer()->getParameter('vimeo_dir');
+
+        if ($handle = opendir($dir)) {
+            while (false !== ($entry = readdir($handle))) {
+                if($entry == '.' || $entry == '..') continue;
+                echo "Uploading: $dir/$entry\n";    
+                
+                $this->upload("$dir/$entry");
+                $this->delete("$dir/$entry");
+            }
+
+            closedir($handle);
+        }
+        
+        
+        $this->unlock();
+
+    }
+
+    protected function upload($path){
         $tmpDir = $this->getApplication()->getKernel()->getCacheDir();
         $logDir = $this->getApplication()->getKernel()->getLogDir();
 
@@ -55,31 +95,18 @@ class VimeoUploadCommand extends ContainerAwareCommand
 
         try {
             $video_id = $video->upload($vimeoService);
-            if($video_id) {
-                $em = $this->getContainer()->get('doctrine')->getEntityManager();
-                $video = $em->getRepository('tankist\UploaderBundle\Entity\Vimeo')->findOneBy(array("filename" => $filename));
-                if(!$video){
-                    $video = new Vimeo();
-                    $video->setFilename($filename);
-                }
-
-                $video->setVimeoId($video_id);
-                
-                $em->persist($video);
-                $em->flush();
-                $text = '<a href="http://vimeo.com/' . $video_id . '">Upload successful!</a>';
-            } else {
-                $text = "Video file did not exist!";
-            }
         }
         catch (VimeoAPIException $e) {
             $text = "Encountered an API error -- code {$e->getCode()} - {$e->getMessage()}";
         }
 
-        if ($input->getOption('yell')) {
-            $text = strtoupper($text);
-        }
+    }
 
-        $output->writeln($text);
+    protected function delete($path){
+        try {
+            unlink($path);  
+        } catch (Exception $e) {
+            echo "Unable to delete file $path :". $e->getMessage();
+        }
     }
 }

@@ -39,7 +39,7 @@ class VimeoController extends Controller
         $filePath = $videoDir."/".$filename;
         
         $consoleBin = $rootDir."/console";
-        $cmd = "$consoleBin vimeo:upload \"$filePath\"";
+        $cmd = "$consoleBin upload:vimeo \"$filePath\"";
 
         $outputfile = $logDir."/output_$filename.out";
         $pidfile = $cacheDir."/pid_$filename.pid";
