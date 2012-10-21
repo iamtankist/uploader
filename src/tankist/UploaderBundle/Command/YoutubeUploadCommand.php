@@ -73,6 +73,8 @@ class YoutubeUploadCommand extends ContainerAwareCommand {
 		    closedir($handle);
 		}
 
+		sort($files);
+
 		foreach($files as $entry) {
 			echo "Uploading: $dir/$entry\n";	
 	    	/*try {
