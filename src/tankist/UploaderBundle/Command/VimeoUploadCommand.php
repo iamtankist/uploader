@@ -60,7 +60,7 @@ class VimeoUploadCommand extends ContainerAwareCommand
 
         $this->lock();
 
-        if(!$this->checkQuota()) exit;
+
         
         // create a log channel
         $logDir = $this->getApplication()->getKernel()->getLogDir();
@@ -82,6 +82,11 @@ class VimeoUploadCommand extends ContainerAwareCommand
             }
 
             closedir($handle);
+        }
+
+
+        if(empty($files) || !$this->checkQuota()) { 
+            $this->unlock(); exit;
         }
 
         sort($files);
