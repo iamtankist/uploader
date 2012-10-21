@@ -63,22 +63,25 @@ class YoutubeUploadCommand extends ContainerAwareCommand {
 		$this->yt = new \Zend_Gdata_YouTube($httpClient, $appName, $appName, $devKey);
 
 		$excludeArr = array('.DS_Store','@eaDir','.','..');
+		$files = array();
 		if ($handle = opendir($dir)) {
 		    while (false !== ($entry = readdir($handle))) {
 		    	if(in_array($entry, $excludeArr)) continue;
-		    	echo "Uploading: $dir/$entry\n";	
-		    	try {
-                    $this->upload("$dir/$entry");
-					$this->delete("$dir/$entry");
-                    $logger->info("$sessionId: SUCCESS: $entry");
-                } catch (Exception $e) {
-                    $logger->error("$sessionId: EXCEPTION: ".$e->getMessage());
-                }
-		    	
-		    	
+				$files[] = $entry;		    	
 		    }
 
 		    closedir($handle);
+		}
+
+		foreach($files as $entry) {
+			echo "Uploading: $dir/$entry\n";	
+	    	/*try {
+                $this->upload("$dir/$entry");
+				$this->delete("$dir/$entry");
+                $logger->info("$sessionId: SUCCESS: $entry");
+            } catch (Exception $e) {
+                $logger->error("$sessionId: EXCEPTION: ".$e->getMessage());
+            }*/
 		}
 
 		$this->unlock();
