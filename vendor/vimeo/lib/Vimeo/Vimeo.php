@@ -10,11 +10,6 @@ class Vimeo_Vimeo extends phpVimeo {
         parent::__construct($consumer_key, $consumer_secret, $token, $token_secret);
     }
 
-    public function setLogger($logger){
-    	$this->logger = $logger;
-    }
-
-
     public function setTmpDir($tmpDir){
     	$this->tmpDir = $tmpDir;
     }
@@ -53,13 +48,11 @@ class Vimeo_Vimeo extends phpVimeo {
         $file_name = $path_parts['basename'];
         $file_size = filesize($file_path);
 
-        $this->logger->addInfo('Starting upload, filesize: '.$file_size);
+        
 
         // Make sure we have enough room left in the user's quota
         $quota = $this->call('vimeo.videos.upload.getQuota');
-        $this->logger->addInfo('Checking Quota, free: '.$quota->user->upload_space->free);
         if ($quota->user->upload_space->free < $file_size) {
-            $this->logger->addError('The file is larger than the user\'s remaining quota.');
             throw new VimeoAPIException('The file is larger than the user\'s remaining quota.', 707);
         }
 
@@ -76,7 +69,6 @@ class Vimeo_Vimeo extends phpVimeo {
 
         // Make sure we're allowed to upload this size file
         if ($file_size > $rsp->ticket->max_file_size) {
-            $this->logger->addError('File exceeds maximum allowed size.');
             throw new VimeoAPIException('File exceeds maximum allowed size.', 710);
         }
 
@@ -84,7 +76,6 @@ class Vimeo_Vimeo extends phpVimeo {
         $chunks = array();
         if ($use_multiple_chunks) {
             if (!is_writeable($chunk_temp_dir)) {
-                $this->logger->addError('Could not write chunks. Make sure the specified folder has write access.');
                 throw new Exception('Could not write chunks. Make sure the specified folder has write access.');
             }
 
@@ -137,12 +128,10 @@ class Vimeo_Vimeo extends phpVimeo {
             $rsp = curl_exec($curl);
             curl_close($curl);
 
-            $this->logger->addInfo('PROGRESS: '.($i+1).' of '.count($chunks));
         }
 
         // Verify
         $verify = $this->call('vimeo.videos.upload.verifyChunks', array('ticket_id' => $ticket));
-        $this->logger->addDebug('VERIFICATION: '.var_export($verify,true));
 
 
         if(isset($verify->ticket->chunks->chunk['id'])) {
@@ -170,11 +159,9 @@ class Vimeo_Vimeo extends phpVimeo {
 
         // Confirmation successful, return video id
         if ($complete->stat == 'ok') {
-             $this->logger->addINFO('COMPLETE');
             return $complete->ticket->video_id;
         }
         else if ($complete->err) {
-            $this->logger->addError($complete->err->msg);
             throw new VimeoAPIException($complete->err->msg, $complete->err->code);
         }
     }
@@ -185,7 +172,6 @@ class Vimeo_Vimeo extends phpVimeo {
         if ($chunk['size'] != $chunk_size) {
             // size incorrect, uh oh
             $errMsg = "Chunk {$chunk_id} is actually {$chunk['size']} but uploaded as {$chunk_size}";
-            $this->logger->addError($errMsg);
             echo $errMsg;
         }   
     }

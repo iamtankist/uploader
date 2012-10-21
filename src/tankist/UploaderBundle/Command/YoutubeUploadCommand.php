@@ -28,12 +28,19 @@ class YoutubeUploadCommand extends ContainerAwareCommand {
     }
 
     protected function execute(InputInterface $input, OutputInterface $output) {
+    	$sessionId = md5(time());
 		$this->lockfile = $this->getApplication()->getKernel()->getCacheDir()."/".str_replace('upload:','',$this->getName()).".lock";
 
 		if($this->isLocked()) {
 			throw new \Exception('Command is still being executed');
 		}
 		$this->lock();
+
+		// create a log channel
+        $logDir = $this->getApplication()->getKernel()->getLogDir();
+        $logfile = $logDir."/youtube.log";
+        $logger = new Logger('uploadLogger');
+        $logger->pushHandler(new StreamHandler($logfile, Logger::INFO));
 
 		$dir      = $this->getContainer()->getParameter('youtube_dir');
     	$login    = $this->getContainer()->getParameter('youtube_account');
@@ -60,9 +67,15 @@ class YoutubeUploadCommand extends ContainerAwareCommand {
 		    while (false !== ($entry = readdir($handle))) {
 		    	if(in_array($entry, $excludeArr)) continue;
 		    	echo "Uploading: $dir/$entry\n";	
+		    	try {
+                    $this->upload("$dir/$entry");
+					$this->delete("$dir/$entry");
+                    $logger->info("$sessionId: SUCCESS: $entry");
+                } catch (Exception $e) {
+                    $logger->error("$sessionId: EXCEPTION: ".$e->getMessage());
+                }
 		    	
-		    	$this->upload("$dir/$entry");
-				$this->delete("$dir/$entry");
+		    	
 		    }
 
 		    closedir($handle);

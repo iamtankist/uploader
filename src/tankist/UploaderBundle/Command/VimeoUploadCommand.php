@@ -40,24 +40,37 @@ class VimeoUploadCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $sessionId = md5(time());
         $this->lockfile = $this->getApplication()->getKernel()->getCacheDir()."/".str_replace('upload:','',$this->getName()).".lock";
 
         if($this->isLocked()) {
             throw new \Exception('Command is still being executed');
         }
+
         $this->lock();
 
-        $dir      = $this->getContainer()->getParameter('vimeo_dir');
+        // create a log channel
+        $logDir = $this->getApplication()->getKernel()->getLogDir();
+        $logfile = $logDir."/vimeo.log";
+        $logger = new Logger('uploadLogger');
+        $logger->pushHandler(new StreamHandler($logfile, Logger::INFO));
 
+
+        $dir = $this->getContainer()->getParameter('vimeo_dir');
 
         $excludeArr = array('.DS_Store','@eaDir','.','..');
         if ($handle = opendir($dir)) {
             while (false !== ($entry = readdir($handle))) {
                 if(in_array($entry, $excludeArr)) continue;
-                echo "Uploading: $dir/$entry\n";    
+                echo "$sessionId: Uploading: $dir/$entry\n";    
+                try {
+                    $this->upload("$dir/$entry");
+                    $this->delete("$dir/$entry");
+                    $logger->info("$sessionId: SUCCESS: $entry");
+                } catch (Exception $e) {
+                    $logger->error("$sessionId: EXCEPTION: ".$e->getMessage());
+                }
                 
-                $this->upload("$dir/$entry");
-                $this->delete("$dir/$entry");
             }
 
             closedir($handle);
@@ -70,14 +83,6 @@ class VimeoUploadCommand extends ContainerAwareCommand
 
     protected function upload($path){
         $tmpDir = $this->getApplication()->getKernel()->getCacheDir();
-        $logDir = $this->getApplication()->getKernel()->getLogDir();
-
-        $filename = pathinfo($path, PATHINFO_BASENAME);
-        $logfile = $logDir."/log_".$filename.".log";
-
-         // create a log channel
-        $logger = new Logger('uploadLogger');
-        $logger->pushHandler(new StreamHandler($logfile, Logger::INFO));
 
         $video = new Vimeo();
         $video->setFilename($path);
@@ -87,21 +92,10 @@ class VimeoUploadCommand extends ContainerAwareCommand
         $consumerSecret = $this->getContainer()->getParameter('vimeo_consumer_secret');
         $accessToken = $this->getContainer()->getParameter('vimeo_access_token');
         $accessTokenSecret = $this->getContainer()->getParameter('vimeo_access_token_secret');
-        
 
         $vimeoService = new \Vimeo_Vimeo($consumerKey, $consumerSecret, $accessToken, $accessTokenSecret);
-        $vimeoService->setLogger($logger);
         $vimeoService->setTmpDir($tmpDir);
-
-
-
-        try {
-            $video_id = $video->upload($vimeoService);
-        }
-        catch (VimeoAPIException $e) {
-            $text = "Encountered an API error -- code {$e->getCode()} - {$e->getMessage()}";
-        }
-
+        $video_id = $video->upload($vimeoService);
     }
 
     protected function delete($path){
