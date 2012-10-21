@@ -18,6 +18,8 @@ class VimeoUploadCommand extends ContainerAwareCommand
 
     protected $lockfle = '';
 
+    protected $service = '';
+
     protected function configure()
     {
         $this
@@ -47,10 +49,23 @@ class VimeoUploadCommand extends ContainerAwareCommand
             throw new \Exception('Command is still being executed');
         }
 
+        $tmpDir = $this->getApplication()->getKernel()->getCacheDir();
+        $consumerKey = $this->getContainer()->getParameter('vimeo_consumer_key');
+        $consumerSecret = $this->getContainer()->getParameter('vimeo_consumer_secret');
+        $accessToken = $this->getContainer()->getParameter('vimeo_access_token');
+        $accessTokenSecret = $this->getContainer()->getParameter('vimeo_access_token_secret');
+
+        $this->service = new \Vimeo_Vimeo($consumerKey, $consumerSecret, $accessToken, $accessTokenSecret);
+        $this->service->setTmpDir($tmpDir);
+
         $this->lock();
 
+        if(!$this->checkQuota()) exit;
+        
         // create a log channel
         $logDir = $this->getApplication()->getKernel()->getLogDir();
+        
+
         $logfile = $logDir."/vimeo.log";
         $logger = new Logger('uploadLogger');
         $logger->pushHandler(new StreamHandler($logfile, Logger::INFO));
@@ -85,21 +100,15 @@ class VimeoUploadCommand extends ContainerAwareCommand
         $this->unlock();
     }
 
-    protected function upload($path){
-        $tmpDir = $this->getApplication()->getKernel()->getCacheDir();
+    protected function checkQuota(){
+        $quota = $this->service->call('vimeo.videos.upload.getQuota');
+        return $quota->user->upload_space->free > 1024*1024*1024;
+    }
 
+    protected function upload($path){
         $video = new Vimeo();
         $video->setFilename($path);
-
-
-        $consumerKey = $this->getContainer()->getParameter('vimeo_consumer_key');
-        $consumerSecret = $this->getContainer()->getParameter('vimeo_consumer_secret');
-        $accessToken = $this->getContainer()->getParameter('vimeo_access_token');
-        $accessTokenSecret = $this->getContainer()->getParameter('vimeo_access_token_secret');
-
-        $vimeoService = new \Vimeo_Vimeo($consumerKey, $consumerSecret, $accessToken, $accessTokenSecret);
-        $vimeoService->setTmpDir($tmpDir);
-        $video_id = $video->upload($vimeoService);
+        $video_id = $video->upload($this->service);
     }
 
     protected function delete($path){
