@@ -50,7 +50,7 @@ class VimeoUploadCommand extends ContainerAwareCommand
         $dir      = $this->getContainer()->getParameter('vimeo_dir');
 
 
-        $excludeArr = array('@eaDir','.','..');
+        $excludeArr = array('.DS_Store','@eaDir','.','..');
         if ($handle = opendir($dir)) {
             while (false !== ($entry = readdir($handle))) {
                 if(in_array($entry, $excludeArr)) continue;

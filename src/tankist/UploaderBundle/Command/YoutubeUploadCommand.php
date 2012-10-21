@@ -55,7 +55,7 @@ class YoutubeUploadCommand extends ContainerAwareCommand {
 
 		$this->yt = new \Zend_Gdata_YouTube($httpClient, $appName, $appName, $devKey);
 
-		$excludeArr = array('@eaDir','.','..');
+		$excludeArr = array('.DS_Store','@eaDir','.','..');
 		if ($handle = opendir($dir)) {
 		    while (false !== ($entry = readdir($handle))) {
 		    	if(in_array($entry, $excludeArr)) continue;
