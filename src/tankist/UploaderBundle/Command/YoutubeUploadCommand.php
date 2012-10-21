@@ -55,9 +55,10 @@ class YoutubeUploadCommand extends ContainerAwareCommand {
 
 		$this->yt = new \Zend_Gdata_YouTube($httpClient, $appName, $appName, $devKey);
 
+		$excludeArr = array('@eaDir','.','..');
 		if ($handle = opendir($dir)) {
 		    while (false !== ($entry = readdir($handle))) {
-		    	if($entry == '.' || $entry == '..') continue;
+		    	if(in_array($entry, $excludeArr)) continue;
 		    	echo "Uploading: $dir/$entry\n";	
 		    	
 		    	$this->upload("$dir/$entry");
