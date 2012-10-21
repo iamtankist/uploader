@@ -77,13 +77,13 @@ class YoutubeUploadCommand extends ContainerAwareCommand {
 
 		foreach($files as $entry) {
 			echo "Uploading: $dir/$entry\n";	
-	    	/*try {
+	    	try {
                 $this->upload("$dir/$entry");
 				$this->delete("$dir/$entry");
                 $logger->info("$sessionId: SUCCESS: $entry");
             } catch (Exception $e) {
                 $logger->error("$sessionId: EXCEPTION: ".$e->getMessage());
-            }*/
+            }
 		}
 
 		$this->unlock();
