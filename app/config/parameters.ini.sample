@@ -1,0 +1,34 @@
+; These parameters can be imported into other config files
+; by enclosing the key with % (like %database_user%)
+; Comments start with ';', as in php.ini
+[parameters]
+    database_driver   = pdo_mysql
+    database_host     = localhost
+    database_port     =
+    database_name     = uploader
+    database_user     = root
+    database_password =
+
+    mailer_transport  = smtp
+    mailer_host       = localhost
+    mailer_user       =
+    mailer_password   =
+
+    locale            = en
+
+    secret            = ThisTokenIsNotSoSecretChangeIt
+
+    video_directory           = "../../../Movies/Videos/"
+
+    vimeo_dir                 = /path/toVimeo
+    vimeo_consumer_key        = here_goes_vimeo_consumer_key
+    vimeo_consumer_secret     = here_goes_vimeo_consumer_secret
+    vimeo_access_token        = here_goes_vimeo_access_token
+    vimeo_access_token_secret = here_goes_vimeo_access_token_secret
+
+    youtube_dir               = /path/toYoutube
+    youtube_account           = here_goes_youtube_account
+    youtube_password          = here_goes_youtube_password
+    youtube_app               = here_goes_youtube_application_name
+    youtube_dev_key           = here_goes_youtube_developer_key
+
