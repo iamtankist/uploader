@@ -104,16 +104,18 @@ class YoutubeUploadCommand extends ContainerAwareCommand {
 	protected function upload($path){
 		$myVideoEntry = new \Zend_Gdata_YouTube_VideoEntry();
 
+		$filename = pathinfo($path, PATHINFO_BASENAME);
+
 		$filesource = $this->yt->newMediaFileSource($path);
 		$filesource->setContentType('video/quicktime');
-		$filesource->setSlug('test2.mov');
+		$filesource->setSlug($filename);
 		$myVideoEntry->setMediaSource($filesource);
 
-		$myVideoEntry->setVideoTitle('My Test Movie');
-		$myVideoEntry->setVideoDescription('My Test rMovie');
+		$myVideoEntry->setVideoTitle($filename);
+		$myVideoEntry->setVideoDescription($filename);
 		$myVideoEntry->setVideoCategory('Comedy');
 		$myVideoEntry->SetVideoTags('kids, funny');
-		$myVideoEntry->setVideoDeveloperTags(array('mydevtag', 'anotherdevtag'));
+		$myVideoEntry->setVideoDeveloperTags(array('kids', 'funny', 'family', 'arina', 'max', 'mkrtchyan'));
 
 		$myVideoEntry->setVideoPrivate();
 
