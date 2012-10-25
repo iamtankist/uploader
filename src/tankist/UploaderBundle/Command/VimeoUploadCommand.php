@@ -116,6 +116,14 @@ class VimeoUploadCommand extends ContainerAwareCommand
         $video = new Vimeo();
         $video->setFilename($path);
         $video_id = $video->upload($this->service);
+        if ($video_id) {
+            $str = 'Success https://vimeo.com/' . $video_id;
+        } else {
+            $str = "Not able to retrieve the video status information yet. " . 
+              "Please try again later.";
+        }
+
+        exec("php app/console notify:gtalk 'Vimeo: $str'");
     }
 
     protected function delete($path){

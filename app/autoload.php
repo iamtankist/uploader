@@ -14,11 +14,12 @@ $loader->registerNamespaces(array(
     'Monolog'          => __DIR__.'/../vendor/monolog/src',
     'Assetic'          => __DIR__.'/../vendor/assetic/src',
     'Metadata'         => __DIR__.'/../vendor/metadata/src',
+    'XMPPHP'           => __DIR__.'/../vendor/XMPPHP/lib'
 ));
 $loader->registerPrefixes(array(
     'Twig_Extensions_' => __DIR__.'/../vendor/twig-extensions/lib',
     'Twig_'            => __DIR__.'/../vendor/twig/lib',
-    'Zend_'            => __DIR__.'/../vendor/zf/library',
+    'JAXL_'            => __DIR__.'/../vendor/JAXL',
     'Vimeo'            => __DIR__.'/../vendor/vimeo/lib'
 ));
 
@@ -36,6 +37,7 @@ if (!function_exists('intl_get_error_code')) {
 
 $loader->registerNamespaceFallbacks(array(
     __DIR__.'/../src',
+    __DIR__.'/../vendor/XMPPHP'
 ));
 $loader->register();
 

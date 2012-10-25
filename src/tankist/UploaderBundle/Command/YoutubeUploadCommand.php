@@ -140,7 +140,17 @@ class YoutubeUploadCommand extends ContainerAwareCommand {
 		$uploadUrl = 'http://uploads.gdata.youtube.com/feeds/api/users/default/uploads';
 
 		try {
-		  $newEntry = $this->yt->insertEntry($myVideoEntry, $uploadUrl, 'Zend_Gdata_YouTube_VideoEntry');
+		  	$newEntry = $this->yt->insertEntry($myVideoEntry, $uploadUrl, 'Zend_Gdata_YouTube_VideoEntry');
+		  	$state = $newEntry->getVideoState();
+
+		  	if ($state) {
+			  	$str = 'Success http://www.youtube.com/watch?v=' . $newEntry->getVideoId();
+			} else {
+			    $str = "Not able to retrieve the video status information yet. " . 
+			      "Please try again later.";
+			}
+
+		    exec("php app/console notify:gtalk 'YouTube: $str'");
 		} catch (Zend_Gdata_App_HttpException $httpException) {
 		  echo $httpException->getRawResponseBody();
 		} catch (Zend_Gdata_App_Exception $e) {
