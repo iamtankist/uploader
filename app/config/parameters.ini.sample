@@ -32,3 +32,5 @@
     youtube_app               = here_goes_youtube_application_name
     youtube_dev_key           = here_goes_youtube_developer_key
 
+    jabber_login              = user@jabber.org
+    jabber_password           = password123
