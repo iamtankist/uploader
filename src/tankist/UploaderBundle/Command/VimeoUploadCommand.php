@@ -20,8 +20,7 @@ class VimeoUploadCommand extends ContainerAwareCommand
 
     protected $service = '';
 
-    protected function configure()
-    {
+    protected function configure(){
         $this
             ->setName('upload:vimeo')
             ->setDescription('Uploads file to vimeo');
@@ -48,28 +47,21 @@ class VimeoUploadCommand extends ContainerAwareCommand
         if($this->isLocked()) {
             throw new \Exception('Command is still being executed');
         }
-
-        $tmpDir = $this->getApplication()->getKernel()->getCacheDir();
-        $consumerKey = $this->getContainer()->getParameter('vimeo_consumer_key');
-        $consumerSecret = $this->getContainer()->getParameter('vimeo_consumer_secret');
-        $accessToken = $this->getContainer()->getParameter('vimeo_access_token');
-        $accessTokenSecret = $this->getContainer()->getParameter('vimeo_access_token_secret');
-
-        $this->service = new \Vimeo_Vimeo($consumerKey, $consumerSecret, $accessToken, $accessTokenSecret);
-        $this->service->setTmpDir($tmpDir);
-
         $this->lock();
 
-
-        
         // create a log channel
         $logDir = $this->getApplication()->getKernel()->getLogDir();
-        
-
         $logfile = $logDir."/vimeo.log";
         $logger = new Logger('uploadLogger');
         $logger->pushHandler(new StreamHandler($logfile, Logger::INFO));
-
+        
+        try {
+            $this->connect();
+        } catch (Exception $e) {
+            $logger->error("$sessionId: EXCEPTION: ".$e->getMessage());
+            $this->unlock();
+            exit;           
+        }
 
         $dir = $this->getContainer()->getParameter('vimeo_dir');
 
@@ -83,8 +75,7 @@ class VimeoUploadCommand extends ContainerAwareCommand
 
             closedir($handle);
         }
-
-
+        
         if(empty($files) || !$this->checkQuota()) { 
             $this->unlock(); exit;
         }
@@ -103,6 +94,17 @@ class VimeoUploadCommand extends ContainerAwareCommand
         }
 
         $this->unlock();
+    }
+
+    protected function connect(){
+        $tmpDir = $this->getApplication()->getKernel()->getCacheDir();
+        $consumerKey = $this->getContainer()->getParameter('vimeo_consumer_key');
+        $consumerSecret = $this->getContainer()->getParameter('vimeo_consumer_secret');
+        $accessToken = $this->getContainer()->getParameter('vimeo_access_token');
+        $accessTokenSecret = $this->getContainer()->getParameter('vimeo_access_token_secret');
+
+        $this->service = new \Vimeo_Vimeo($consumerKey, $consumerSecret, $accessToken, $accessTokenSecret);
+        $this->service->setTmpDir($tmpDir);
     }
 
     protected function checkQuota(){

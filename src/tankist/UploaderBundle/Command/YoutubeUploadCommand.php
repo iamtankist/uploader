@@ -36,31 +36,25 @@ class YoutubeUploadCommand extends ContainerAwareCommand {
 		}
 		$this->lock();
 
+
 		// create a log channel
         $logDir = $this->getApplication()->getKernel()->getLogDir();
         $logfile = $logDir."/youtube.log";
         $logger = new Logger('uploadLogger');
         $logger->pushHandler(new StreamHandler($logfile, Logger::INFO));
 
-		$dir      = $this->getContainer()->getParameter('youtube_dir');
-    	$login    = $this->getContainer()->getParameter('youtube_account');
-        $password = $this->getContainer()->getParameter('youtube_password');
-        $appName  = $this->getContainer()->getParameter('youtube_app');
-        $devKey   = $this->getContainer()->getParameter('youtube_dev_key');
-        
-        $authenticationURL= 'https://www.google.com/accounts/ClientLogin';
-		$httpClient = 
-		  \Zend_Gdata_ClientLogin::getHttpClient(
-		              $login,
-		              $password,
-		              $service = 'youtube',
-		              $client = null,
-		              $source = $appName, // a short string identifying your application
-		              $loginToken = null,
-		              $loginCaptcha = null,
-		              $authenticationURL);
 
-		$this->yt = new \Zend_Gdata_YouTube($httpClient, $appName, $appName, $devKey);
+		try {
+			$this->connect();
+		} catch (Exception $e) {
+			$logger->error("$sessionId: EXCEPTION: ".$e->getMessage());
+			$this->unlock();
+			exit;			
+		}
+
+		
+
+		$dir = $this->getContainer()->getParameter('youtube_dir');
 
 		$excludeArr = array('.DS_Store','@eaDir','.','..');
 		$files = array();
@@ -83,10 +77,34 @@ class YoutubeUploadCommand extends ContainerAwareCommand {
                 $logger->info("$sessionId: SUCCESS: $entry");
             } catch (Exception $e) {
                 $logger->error("$sessionId: EXCEPTION: ".$e->getMessage());
+                $this->unlock();
+				exit;
             }
 		}
 
 		$this->unlock();
+	}
+
+	protected function connect(){
+		
+    	$login    = $this->getContainer()->getParameter('youtube_account');
+        $password = $this->getContainer()->getParameter('youtube_password');
+        $appName  = $this->getContainer()->getParameter('youtube_app');
+        $devKey   = $this->getContainer()->getParameter('youtube_dev_key');
+        
+        $authenticationURL= 'https://www.google.com/accounts/ClientLogin';
+		$httpClient = 
+		  \Zend_Gdata_ClientLogin::getHttpClient(
+		              $login,
+		              $password,
+		              $service = 'youtube',
+		              $client = null,
+		              $source = $appName, // a short string identifying your application
+		              $loginToken = null,
+		              $loginCaptcha = null,
+		              $authenticationURL);
+
+		$this->yt = new \Zend_Gdata_YouTube($httpClient, $appName, $appName, $devKey);
 	}
 
 	protected function lock(){
