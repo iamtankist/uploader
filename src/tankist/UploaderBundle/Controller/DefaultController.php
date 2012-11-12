@@ -80,8 +80,7 @@ class DefaultController extends Controller
         $logDir = $this->get('kernel')->getLogDir();
         $data = array();        
         foreach($filesToBeWatched as $file) {
-            passthru('tail -n 50 '.$logDir.'/'.$file,$output);
-            $data[$file] = $output;
+            $data[$file] = shell_exec('tail -n 50 '.$logDir.'/'.$file,$output);
         }
 
         //echo exit;
