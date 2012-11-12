@@ -80,7 +80,9 @@ class DefaultController extends Controller
         $cacheDir = $this->get('kernel')->getCacheDir();
         $data = array();        
         foreach($filesToBeWatched as $file) {
+
             $data[$file] = exec('tail -n 50 '.$cacheDir.'/'.$file);
+            $data[$file] = exec(''.$cacheDir.'/'.$file);
         }
 
         //echo exit;
