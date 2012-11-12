@@ -66,4 +66,26 @@ class DefaultController extends Controller
         return array();
     }
 
+    /**
+     * @Route("/tail", name="_tail")
+     * @Template()
+     */
+    public function tailAction()
+    {
+        $filesToBeWatched = array(
+            'youtube.log','youtube.output.log',
+            'vimeo.log','vimeo.output.log'
+            );
+
+        $cacheDir = $this->get('kernel')->getCacheDir();
+        $data = array();        
+        foreach($filesToBeWatched as $file) {
+            $data[$file] = exec('tail -n 50 '.$cacheDir.'/'.$file);
+        }
+
+        //echo exit;
+        //echo exec('tail -n 50 '.$cacheDir.'/appdevUrlMatcher.php.meta');exit;
+        return new Response(json_encode(array($data)));
+    }
+
 }
