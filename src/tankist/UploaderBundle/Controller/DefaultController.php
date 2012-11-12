@@ -77,13 +77,10 @@ class DefaultController extends Controller
             'vimeo.log','vimeo.output.log'
             );
 
-        $cacheDir = $this->get('kernel')->getCacheDir();
+        $logDir = $this->get('kernel')->getLogDir();
         $data = array();        
         foreach($filesToBeWatched as $file) {
-            var_dump($cacheDir.'/'.$file);exit;
-
-            $data[$file] = exec('tail -n 50 '.$cacheDir.'/'.$file);
-            $data[$file] = exec(''.$cacheDir.'/'.$file);
+            $data[$file] = exec('tail -n 50 '.$logDir.'/'.$file);
         }
 
         //echo exit;
