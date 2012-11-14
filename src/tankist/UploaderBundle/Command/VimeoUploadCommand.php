@@ -91,6 +91,7 @@ class VimeoUploadCommand extends ContainerAwareCommand
             } catch (Exception $e) {
                 $logger->error("$sessionId: EXCEPTION: ".$e->getMessage());
             }
+            break; //only one file per cron iteration. due to some vimeo internal errors
         }
 
         $this->unlock();
